@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+/* Screens */
+.screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.active {
+    display: flex;
+}
+
+/* Title */
+h1 {
+    font-size: 3rem;
+    background: linear-gradient(45deg, #00f5ff, #ff00c8);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Buttons */
+button {
+    margin: 10px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff00c8, #00f5ff);
+    color: white;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(255, 0, 200, 0.6);
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+
+/* Board */
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 110px);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.cell {
+    width: 110px;
+    height: 110px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.cell:hover {
+    transform: scale(1.05);
+}
+
+.cell.winner {
+    background: linear-gradient(45deg, #00ff88, #00c3ff);
+    color: black;
+}
+
+#status {
+    margin-top: 15px;
+    font-size: 1.2rem;
+}
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="homeScreen" class="screen active">
+    <h1>Tic Tac Toe</h1>
+    <button onclick="startGame('player')">👥 2 Player Mode</button>
+    <button onclick="startGame('robot')">🤖 Play vs Robot</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen">
+    <h1>Tic Tac Toe</h1>
+    <div id="status"></div>
+
+    <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <button onclick="restartGame()">Restart</button>
+    <button onclick="goHome()">Back to Home</button>
+</div>
+
+<script>
+const homeScreen = document.getElementById("homeScreen");
+const gameScreen = document.getElementById("gameScreen");
+const cells = document.querySelectorAll(".cell");
+const statusText = document.getElementById("status");
+
+let board = ["","","","","","","","",""];
+let currentPlayer = "X";
+let gameActive = true;
+let mode = "player";
+
+const winConditions = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+];
+
+function startGame(selectedMode) {
+    mode = selectedMode;
+    homeScreen.classList.remove("active");
+    gameScreen.classList.add("active");
+    restartGame();
+}
+
+function goHome() {
+    gameScreen.classList.remove("active");
+    homeScreen.classList.add("active");
+}
+
+cells.forEach(cell => {
+    cell.addEventListener("click", handleClick);
+});
+
+function handleClick() {
+    const index = this.dataset.index;
+
+    if (board[index] !== "" || !gameActive) return;
+
+    makeMove(index, currentPlayer);
+
+    if (mode === "robot" && gameActive && currentPlayer === "O") {
+        setTimeout(robotMove, 500);
+    }
+}
+
+function makeMove(index, player) {
+    board[index] = player;
+    cells[index].textContent = player;
+    checkWinner();
+}
+
+function robotMove() {
+    let emptyIndexes = board
+        .map((val, idx) => val === "" ? idx : null)
+        .filter(val => val !== null);
+
+    let randomIndex = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+    makeMove(randomIndex, "O");
+}
+
+function checkWinner() {
+    let roundWon = false;
+
+    for (let condition of winConditions) {
+        const [a,b,c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            cells[a].classList.add("winner");
+            cells[b].classList.add("winner");
+            cells[c].classList.add("winner");
+            roundWon = true;
+            break;
+        }
+    }
+
+    if (roundWon) {
+        statusText.textContent = `Player ${currentPlayer} Wins! 🎉`;
+        gameActive = false;
+        return;
+    }
+
+    if (!board.includes("")) {
+        statusText.textContent = "It's a Draw!";
+        gameActive = false;
+        return;
+    }
+
+    currentPlayer = currentPlayer === "X" ? "O" : "X";
+    statusText.textContent = `Player ${currentPlayer}'s Turn`;
+}
+
+function restartGame() {
+    board = ["","","","","","","","",""];
+    currentPlayer = "X";
+    gameActive = true;
+    statusText.textContent = "Player X's Turn";
+    cells.forEach(cell => {
+        cell.textContent = "";
+        cell.classList.remove("winner");
+    });
+}
+</script>
+
+</body>
+</html>
