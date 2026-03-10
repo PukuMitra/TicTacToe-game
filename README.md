@@ -24,18 +24,6 @@ This project demonstrates basic **DOM manipulation, game logic, and interactive 
 
 ---
 
-## 📂 Project Structure
-
-```
-tic-tac-toe/
-│
-├── index.html      # Main HTML file
-├── style.css       # Game styling
-├── script.js       # Game logic
-└── README.md       # Project documentation
-```
-
----
 
 ## ▶️ How to Run the Project
 
